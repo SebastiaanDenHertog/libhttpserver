@@ -1,3 +1,0 @@
-fun:__interceptor_strlen
-fun:__interceptor_fopen64
-fun:__interceptor_memcmp
