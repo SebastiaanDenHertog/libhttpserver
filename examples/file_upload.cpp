@@ -19,28 +19,31 @@
 */
 
 #include <iostream>
-#include <httpserver.hpp>
+#include <httpserver.h>
 
-class file_upload_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request&) {
-         std::string get_response = "<html>\n";
-         get_response += "  <body>\n";
-         get_response += "    <form method=\"POST\" enctype=\"multipart/form-data\">\n";
-         get_response += "      <h1>Upload 1 (key is 'files', multiple files can be selected)</h1><br>\n";
-         get_response += "      <input type=\"file\" name=\"files\" multiple>\n";
-         get_response += "      <br><br>\n";
-         get_response += "      <h1>Upload 2 (key is 'files2', multiple files can be selected)</h1><br>\n";
-         get_response += "      <input type=\"file\" name=\"files2\" multiple><br><br>\n";
-         get_response += "      <input type=\"submit\" value=\"Upload\">\n";
-         get_response += "    </form>\n";
-         get_response += "  </body>\n";
-         get_response += "</html>\n";
+class file_upload_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request &)
+    {
+        std::string get_response = "<html>\n";
+        get_response += "  <body>\n";
+        get_response += "    <form method=\"POST\" enctype=\"multipart/form-data\">\n";
+        get_response += "      <h1>Upload 1 (key is 'files', multiple files can be selected)</h1><br>\n";
+        get_response += "      <input type=\"file\" name=\"files\" multiple>\n";
+        get_response += "      <br><br>\n";
+        get_response += "      <h1>Upload 2 (key is 'files2', multiple files can be selected)</h1><br>\n";
+        get_response += "      <input type=\"file\" name=\"files2\" multiple><br><br>\n";
+        get_response += "      <input type=\"submit\" value=\"Upload\">\n";
+        get_response += "    </form>\n";
+        get_response += "  </body>\n";
+        get_response += "</html>\n";
 
-         return std::shared_ptr<httpserver::http_response>(new httpserver::string_response(get_response, 200, "text/html"));
-     }
+        return std::shared_ptr<httpserver::http_response>(new httpserver::string_response(get_response, 200, "text/html"));
+    }
 
-     std::shared_ptr<httpserver::http_response> render_POST(const httpserver::http_request& req) {
+    std::shared_ptr<httpserver::http_response> render_POST(const httpserver::http_request &req)
+    {
         std::string post_response = "<html>\n";
         post_response += "<head>\n";
         post_response += "  <style>\n";
@@ -63,8 +66,10 @@ class file_upload_resource : public httpserver::http_resource {
         post_response += "      <th>Transfer encoding</th>\n";
         post_response += "    </tr>\n";
 
-        for (auto &file_key : req.get_files()) {
-            for (auto &files : file_key.second) {
+        for (auto &file_key : req.get_files())
+        {
+            for (auto &files : file_key.second)
+            {
                 post_response += "    <tr><td>";
                 post_response += file_key.first;
                 post_response += "</td><td>";
@@ -88,9 +93,11 @@ class file_upload_resource : public httpserver::http_resource {
     }
 };
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
     // this example needs a directory as parameter
-    if (2 != argc) {
+    if (2 != argc)
+    {
         std::cout << "Usage: file_upload <upload_dir>" << std::endl;
         std::cout << std::endl;
         std::cout << "         file_upload: writeable directory where uploaded files will be stored" << std::endl;
@@ -102,10 +109,10 @@ int main(int argc, char** argv) {
     std::cout << "Please make sure, that the given directory exists and is writeable" << std::endl;
 
     httpserver::webserver ws = httpserver::create_webserver(8080)
-                              .no_put_processed_data_to_content()
-                              .file_upload_dir(std::string(argv[1]))
-                              .generate_random_filename_on_upload()
-                              .file_upload_target(httpserver::FILE_UPLOAD_DISK_ONLY);
+                                   .no_put_processed_data_to_content()
+                                   .file_upload_dir(std::string(argv[1]))
+                                   .generate_random_filename_on_upload()
+                                   .file_upload_target(httpserver::FILE_UPLOAD_DISK_ONLY);
 
     file_upload_resource fur;
     ws.register_resource("/", &fur);
@@ -113,4 +120,3 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-

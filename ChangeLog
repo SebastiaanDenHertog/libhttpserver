@@ -205,7 +205,7 @@ Sun Sep 23 19:09:54 2012 +0200
 	Avoided the usage of the sole option MHD_USE_POLL - Sebastiano Merlino
 
 Thu Sep 20 08:47:24 2012 +0200
-	Added forgotten modded_request.hpp file - Sebastiano Merlino
+	Added forgotten modded_request.h file - Sebastiano Merlino
 
 Thu Sep 20 08:46:33 2012 +0200
 	Added .gitignore file - Sebastiano Merlino

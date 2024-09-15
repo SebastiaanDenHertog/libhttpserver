@@ -18,30 +18,37 @@
      USA
 */
 
-#include <httpserver.hpp>
+#include <httpserver.h>
 
-class hello_world_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render(const httpserver::http_request&) {
-         return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Hello, World!"));
-     }
+class hello_world_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render(const httpserver::http_request &)
+    {
+        return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Hello, World!"));
+    }
 };
 
-class handling_multiple_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render(const httpserver::http_request& req) {
-         return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Your URL: " + std::string(req.get_path())));
-     }
+class handling_multiple_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render(const httpserver::http_request &req)
+    {
+        return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Your URL: " + std::string(req.get_path())));
+    }
 };
 
-class url_args_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render(const httpserver::http_request& req) {
-         return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("ARGS: " + std::string(req.get_arg("arg1")) + " and " + std::string(req.get_arg("arg2"))));
-     }
+class url_args_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render(const httpserver::http_request &req)
+    {
+        return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("ARGS: " + std::string(req.get_arg("arg1")) + " and " + std::string(req.get_arg("arg2"))));
+    }
 };
 
-int main() {
+int main()
+{
     httpserver::webserver ws = httpserver::create_webserver(8080);
 
     hello_world_resource hwr;

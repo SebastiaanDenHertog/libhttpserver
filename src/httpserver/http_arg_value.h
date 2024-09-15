@@ -18,49 +18,56 @@
      USA
 */
 
-#include "httpserver/string_utilities.h"
+#if !defined(_HTTPSERVER_HPP_INSIDE_) && !defined(HTTPSERVER_COMPILATION)
+#error "Only <httpserver.h> or <httpserverpp> can be included directly."
+#endif
 
-#include <algorithm>
-#include <cctype>
-#include <sstream>
+#ifndef SRC_HTTPSERVER_HTTP_ARG_VALUE_HPP_
+#define SRC_HTTPSERVER_HTTP_ARG_VALUE_HPP_
+
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace httpserver
 {
-    namespace string_utilities
+
+    class http_arg_value
     {
-
-        const std::string to_upper_copy(const std::string &str)
+    public:
+        std::string_view get_flat_value() const
         {
-            std::string result = str;
-            std::transform(result.begin(), result.end(), result.begin(), (int (*)(int))std::toupper);
-
-            return result;
+            return values.empty() ? "" : values[0];
         }
 
-        const std::string to_lower_copy(const std::string &str)
+        std::vector<std::string_view> get_all_values() const
         {
-            std::string result = str;
-            std::transform(result.begin(), result.end(), result.begin(), (int (*)(int))std::tolower);
-
-            return result;
+            return values;
         }
 
-        const std::vector<std::string> string_split(const std::string &s, char sep, bool collapse)
+        operator std::string() const
+        {
+            return std::string(get_flat_value());
+        }
+
+        operator std::string_view() const
+        {
+            return get_flat_value();
+        }
+
+        operator std::vector<std::string>() const
         {
             std::vector<std::string> result;
-
-            std::istringstream buf(s);
-            for (std::string token; getline(buf, token, sep);)
+            for (auto const &value : values)
             {
-                if ((collapse && token != "") || !collapse)
-                {
-                    result.push_back(token);
-                }
+                result.push_back(std::string(value));
             }
             return result;
         }
 
-    } // namespace string_utilities
-} // namespace httpserver
+        std::vector<std::string_view> values;
+    };
+
+} // end namespace httpserver
+
+#endif // SRC_HTTPSERVER_HTTP_ARG_VALUE_HPP_

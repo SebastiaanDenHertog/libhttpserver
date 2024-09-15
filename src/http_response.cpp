@@ -18,60 +18,72 @@
      USA
 */
 
-#include "httpserver/http_response.hpp"
+#include "httpserver/http_response.h"
 #include <microhttpd.h>
 #include <iostream>
 #include <utility>
-#include "httpserver/http_utils.hpp"
+#include "httpserver/http_utils.h"
 
-namespace httpserver {
+namespace httpserver
+{
 
-MHD_Response* http_response::get_raw_response() {
-    return MHD_create_response_from_buffer(0, nullptr, MHD_RESPMEM_PERSISTENT);
-}
-
-void http_response::decorate_response(MHD_Response* response) {
-    std::map<std::string, std::string, http::header_comparator>::iterator it;
-
-    for (it=headers.begin() ; it != headers.end(); ++it) {
-        MHD_add_response_header(response, (*it).first.c_str(), (*it).second.c_str());
+    MHD_Response *http_response::get_raw_response()
+    {
+        return MHD_create_response_from_buffer(0, nullptr, MHD_RESPMEM_PERSISTENT);
     }
 
-    for (it=footers.begin() ; it != footers.end(); ++it) {
-        MHD_add_response_footer(response, (*it).first.c_str(), (*it).second.c_str());
+    void http_response::decorate_response(MHD_Response *response)
+    {
+        std::map<std::string, std::string, http::header_comparator>::iterator it;
+
+        for (it = headers.begin(); it != headers.end(); ++it)
+        {
+            MHD_add_response_header(response, (*it).first.c_str(), (*it).second.c_str());
+        }
+
+        for (it = footers.begin(); it != footers.end(); ++it)
+        {
+            MHD_add_response_footer(response, (*it).first.c_str(), (*it).second.c_str());
+        }
+
+        for (it = cookies.begin(); it != cookies.end(); ++it)
+        {
+            MHD_add_response_header(response, "Set-Cookie", ((*it).first + "=" + (*it).second).c_str());
+        }
     }
 
-    for (it=cookies.begin(); it != cookies.end(); ++it) {
-        MHD_add_response_header(response, "Set-Cookie", ((*it).first + "=" + (*it).second).c_str());
+    int http_response::enqueue_response(MHD_Connection *connection, MHD_Response *response)
+    {
+        return MHD_queue_response(connection, response_code, response);
     }
-}
 
-int http_response::enqueue_response(MHD_Connection* connection, MHD_Response* response) {
-    return MHD_queue_response(connection, response_code, response);
-}
-
-void http_response::shoutCAST() {
-    response_code |= http::http_utils::shoutcast_response;
-}
-
-namespace {
-static inline http::header_view_map to_view_map(const http::header_map& hdr_map) {
-    http::header_view_map view_map;
-    for (const auto& item : hdr_map) {
-        view_map[std::string_view(item.first)] = std::string_view(item.second);
+    void http_response::shoutCAST()
+    {
+        response_code |= http::http_utils::shoutcast_response;
     }
-    return view_map;
-}
-}
 
-std::ostream &operator<< (std::ostream& os, const http_response& r) {
-    os << "Response [response_code:" << r.response_code << "]" << std::endl;
+    namespace
+    {
+        static inline http::header_view_map to_view_map(const http::header_map &hdr_map)
+        {
+            http::header_view_map view_map;
+            for (const auto &item : hdr_map)
+            {
+                view_map[std::string_view(item.first)] = std::string_view(item.second);
+            }
+            return view_map;
+        }
+    }
 
-    http::dump_header_map(os, "Headers", to_view_map(r.headers));
-    http::dump_header_map(os, "Footers", to_view_map(r.footers));
-    http::dump_header_map(os, "Cookies", to_view_map(r.cookies));
+    std::ostream &operator<<(std::ostream &os, const http_response &r)
+    {
+        os << "Response [response_code:" << r.response_code << "]" << std::endl;
 
-    return os;
-}
+        http::dump_header_map(os, "Headers", to_view_map(r.headers));
+        http::dump_header_map(os, "Footers", to_view_map(r.footers));
+        http::dump_header_map(os, "Cookies", to_view_map(r.cookies));
 
-}  // namespace httpserver
+        return os;
+    }
+
+} // namespace httpserver

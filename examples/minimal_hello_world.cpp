@@ -18,16 +18,19 @@
      USA
 */
 
-#include <httpserver.hpp>
+#include <httpserver.h>
 
-class hello_world_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render(const httpserver::http_request&) {
-         return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Hello, World!"));
-     }
+class hello_world_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render(const httpserver::http_request &)
+    {
+        return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Hello, World!"));
+    }
 };
 
-int main() {
+int main()
+{
     httpserver::webserver ws = httpserver::create_webserver(8080);
 
     hello_world_resource hwr;

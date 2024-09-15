@@ -35,8 +35,8 @@
 #include <unistd.h>
 #include <memory>
 
-#include "./httpserver.hpp"
-#include "./littletest.hpp"
+#include "./httpserver.h"
+#include "./littletest.h"
 
 using std::shared_ptr;
 
@@ -44,7 +44,7 @@ using std::shared_ptr;
 #define PORT HTTPSERVER_PORT
 #else
 #define PORT 8080
-#endif  // PORT
+#endif // PORT
 
 #define STR2(p) #p
 #define STR(p) STR2(p)
@@ -54,40 +54,47 @@ using std::shared_ptr;
 #define ROOT STR(HTTPSERVER_DATA_ROOT)
 #else
 #define ROOT "."
-#endif  // HTTPSERVER_DATA_ROOT
+#endif // HTTPSERVER_DATA_ROOT
 
-size_t writefunc(void *ptr, size_t size, size_t nmemb, std::string *s) {
-    s->append(reinterpret_cast<char*>(ptr), size*nmemb);
-    return size*nmemb;
+size_t writefunc(void *ptr, size_t size, size_t nmemb, std::string *s)
+{
+    s->append(reinterpret_cast<char *>(ptr), size * nmemb);
+    return size * nmemb;
 }
 
-class ok_resource : public httpserver::http_resource {
- public:
-     shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request&) {
-         return std::make_shared<httpserver::string_response>("OK", 200, "text/plain");
-     }
+class ok_resource : public httpserver::http_resource
+{
+public:
+    shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request &)
+    {
+        return std::make_shared<httpserver::string_response>("OK", 200, "text/plain");
+    }
 };
 
-shared_ptr<httpserver::http_response> not_found_custom(const httpserver::http_request&) {
+shared_ptr<httpserver::http_response> not_found_custom(const httpserver::http_request &)
+{
     return std::make_shared<httpserver::string_response>("Not found custom", 404, "text/plain");
 }
 
-shared_ptr<httpserver::http_response> not_allowed_custom(const httpserver::http_request&) {
+shared_ptr<httpserver::http_response> not_allowed_custom(const httpserver::http_request &)
+{
     return std::make_shared<httpserver::string_response>("Not allowed custom", 405, "text/plain");
 }
 
 LT_BEGIN_SUITE(ws_start_stop_suite)
-    void set_up() {
-    }
+void set_up()
+{
+}
 
-    void tear_down() {
-    }
+void tear_down()
+{
+}
 LT_END_SUITE(ws_start_stop_suite)
 
 #ifndef _WINDOWS
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, start_stop)
-    { // NOLINT (internal scope opening - not method start)
+{ // NOLINT (internal scope opening - not method start)
     httpserver::webserver ws = httpserver::create_webserver(PORT);
     ok_resource ok;
     LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
@@ -107,9 +114,9 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, start_stop)
     curl_easy_cleanup(curl);
 
     ws.stop();
-    }
+}
 
-    {
+{
     httpserver::webserver ws = httpserver::create_webserver(PORT).start_method(httpserver::http::http_utils::INTERNAL_SELECT);
     ok_resource ok;
     LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
@@ -129,9 +136,9 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, start_stop)
     curl_easy_cleanup(curl);
 
     ws.stop();
-    }
+}
 
-    {
+{
     httpserver::webserver ws = httpserver::create_webserver(PORT).start_method(httpserver::http::http_utils::THREAD_PER_CONNECTION);
     ok_resource ok;
     LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
@@ -151,13 +158,13 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, start_stop)
     curl_easy_cleanup(curl);
 
     ws.stop();
-    }
+}
 LT_END_AUTO_TEST(start_stop)
 
 #if defined(IPV6_TESTS_ENABLED)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, ipv6)
-    { // NOLINT (internal scope opening - not method start)
+{ // NOLINT (internal scope opening - not method start)
     httpserver::webserver ws = httpserver::create_webserver(PORT).use_ipv6();
     ok_resource ok;
     LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
@@ -178,11 +185,11 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, ipv6)
     curl_easy_cleanup(curl);
 
     ws.stop();
-    }
+}
 LT_END_AUTO_TEST(ipv6)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, dual_stack)
-    { // NOLINT (internal scope opening - not method start)
+{ // NOLINT (internal scope opening - not method start)
     httpserver::webserver ws = httpserver::create_webserver(PORT).use_dual_stack();
     ok_resource ok;
     LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
@@ -203,18 +210,18 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, dual_stack)
     curl_easy_cleanup(curl);
 
     ws.stop();
-    }
+}
 LT_END_AUTO_TEST(dual_stack)
 
 #endif
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, sweet_kill)
-    httpserver::webserver ws = httpserver::create_webserver(PORT);
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    ws.start(false);
+httpserver::webserver ws = httpserver::create_webserver(PORT);
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+ws.start(false);
 
-    {
+{
     curl_global_init(CURL_GLOBAL_ALL);
     std::string s;
     CURL *curl = curl_easy_init();
@@ -227,11 +234,11 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, sweet_kill)
     LT_ASSERT_EQ(res, 0);
     LT_CHECK_EQ(s, "OK");
     curl_easy_cleanup(curl);
-    }
+}
 
-    ws.sweet_kill();
+ws.sweet_kill();
 
-    {
+{
     curl_global_init(CURL_GLOBAL_ALL);
     std::string s;
     CURL *curl = curl_easy_init();
@@ -243,316 +250,325 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, sweet_kill)
     res = curl_easy_perform(curl);
     LT_ASSERT_EQ(res, 7);
     curl_easy_cleanup(curl);
-    }
+}
 LT_END_AUTO_TEST(sweet_kill)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, disable_options)
-    httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .no_ssl()
-        .no_ipv6()
-        .no_debug()
-        .no_pedantic()
-        .no_basic_auth()
-        .no_digest_auth()
-        .no_deferred()
-        .no_regex_checking()
-        .no_ban_system()
-        .no_post_process();
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    ws.start(false);
+httpserver::webserver ws = httpserver::create_webserver(PORT)
+                               .no_ssl()
+                               .no_ipv6()
+                               .no_debug()
+                               .no_pedantic()
+                               .no_basic_auth()
+                               .no_digest_auth()
+                               .no_deferred()
+                               .no_regex_checking()
+                               .no_ban_system()
+                               .no_post_process();
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+ws.start(false);
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(disable_options)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, enable_options)
-    httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .debug()
-        .pedantic()
-        .deferred()
-        .regex_checking()
-        .ban_system()
-        .post_process();
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    ws.start(false);
+httpserver::webserver ws = httpserver::create_webserver(PORT)
+                               .debug()
+                               .pedantic()
+                               .deferred()
+                               .regex_checking()
+                               .ban_system()
+                               .post_process();
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+ws.start(false);
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(enable_options)
 
 #ifndef DARWIN
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, custom_socket)
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
+int fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    struct sockaddr_in address;
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = inet_addr("127.0.0.1");
-    address.sin_port = htons(PORT);
-    bind(fd, (struct sockaddr*) &address, sizeof(address));
-    listen(fd, 10000);
+struct sockaddr_in address;
+address.sin_family = AF_INET;
+address.sin_addr.s_addr = inet_addr("127.0.0.1");
+address.sin_port = htons(PORT);
+bind(fd, (struct sockaddr *)&address, sizeof(address));
+listen(fd, 10000);
 
-    httpserver::webserver ws = httpserver::create_webserver(-1).bind_socket(fd);  // whatever port here doesn't matter
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    ws.start(false);
+httpserver::webserver ws = httpserver::create_webserver(-1).bind_socket(fd); // whatever port here doesn't matter
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+ws.start(false);
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(custom_socket)
 #endif
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, single_resource)
-    httpserver::webserver ws = httpserver::create_webserver(PORT).single_resource();
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("/", &ok, true));
-    ws.start(false);
+httpserver::webserver ws = httpserver::create_webserver(PORT).single_resource();
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("/", &ok, true));
+ws.start(false);
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/any/url/works");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/any/url/works");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(single_resource)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, single_resource_not_default_resource)
-    httpserver::webserver ws = httpserver::create_webserver(PORT).single_resource();
-    ok_resource ok;
-    LT_CHECK_THROW(ws.register_resource("/other", &ok, true));
-    LT_CHECK_THROW(ws.register_resource("/", &ok, false));
-    ws.start(false);
+httpserver::webserver ws = httpserver::create_webserver(PORT).single_resource();
+ok_resource ok;
+LT_CHECK_THROW(ws.register_resource("/other", &ok, true));
+LT_CHECK_THROW(ws.register_resource("/", &ok, false));
+ws.start(false);
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(single_resource_not_default_resource)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, thread_per_connection_fails_with_max_threads)
-    { // NOLINT (internal scope opening - not method start)
+{ // NOLINT (internal scope opening - not method start)
     httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .start_method(httpserver::http::http_utils::THREAD_PER_CONNECTION)
-        .max_threads(5);
+                                   .start_method(httpserver::http::http_utils::THREAD_PER_CONNECTION)
+                                   .max_threads(5);
     LT_CHECK_THROW(ws.start(false));
-    }
+}
 LT_END_AUTO_TEST(thread_per_connection_fails_with_max_threads)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, thread_per_connection_fails_with_max_threads_stack_size)
-    { // NOLINT (internal scope opening - not method start)
+{ // NOLINT (internal scope opening - not method start)
     httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .start_method(httpserver::http::http_utils::THREAD_PER_CONNECTION)
-        .max_thread_stack_size(4*1024*1024);
+                                   .start_method(httpserver::http::http_utils::THREAD_PER_CONNECTION)
+                                   .max_thread_stack_size(4 * 1024 * 1024);
     LT_CHECK_THROW(ws.start(false));
-    }
+}
 LT_END_AUTO_TEST(thread_per_connection_fails_with_max_threads_stack_size)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, tuning_options)
-    httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .max_connections(10)
-        .max_threads(10)
-        .memory_limit(10000)
-        .per_IP_connection_limit(10)
-        .max_thread_stack_size(4*1024*1024)
-        .nonce_nc_size(10);
+httpserver::webserver ws = httpserver::create_webserver(PORT)
+                               .max_connections(10)
+                               .max_threads(10)
+                               .memory_limit(10000)
+                               .per_IP_connection_limit(10)
+                               .max_thread_stack_size(4 * 1024 * 1024)
+                               .nonce_nc_size(10);
 
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    LT_CHECK_NOTHROW(ws.start(false));
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+LT_CHECK_NOTHROW(ws.start(false));
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(tuning_options)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, ssl_base)
-    httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .use_ssl()
-        .https_mem_key(ROOT "/key.pem")
-        .https_mem_cert(ROOT "/cert.pem");
+httpserver::webserver ws = httpserver::create_webserver(PORT)
+                               .use_ssl()
+                               .https_mem_key(ROOT "/key.pem")
+                               .https_mem_cert(ROOT "/cert.pem");
 
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    ws.start(false);
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+ws.start(false);
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);  // avoid verifying ssl
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);  // avoid verifying ssl
-    curl_easy_setopt(curl, CURLOPT_URL, "https://localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
-    curl_global_cleanup();
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L); // avoid verifying ssl
+curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L); // avoid verifying ssl
+curl_easy_setopt(curl, CURLOPT_URL, "https://localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
+curl_global_cleanup();
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(ssl_base)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, ssl_with_protocol_priorities)
-    httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .use_ssl()
-        .https_mem_key(ROOT "/key.pem")
-        .https_mem_cert(ROOT "/cert.pem")
-        .https_priorities("NORMAL:-MD5");
+httpserver::webserver ws = httpserver::create_webserver(PORT)
+                               .use_ssl()
+                               .https_mem_key(ROOT "/key.pem")
+                               .https_mem_cert(ROOT "/cert.pem")
+                               .https_priorities("NORMAL:-MD5");
 
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    ws.start(false);
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+ws.start(false);
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);  // avoid verifying ssl
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);  // avoid verifying ssl
-    curl_easy_setopt(curl, CURLOPT_URL, "https://localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L); // avoid verifying ssl
+curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L); // avoid verifying ssl
+curl_easy_setopt(curl, CURLOPT_URL, "https://localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(ssl_with_protocol_priorities)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, ssl_with_trust)
-    httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .use_ssl()
-        .https_mem_key(ROOT "/key.pem")
-        .https_mem_cert(ROOT "/cert.pem")
-        .https_mem_trust(ROOT "/test_root_ca.pem");
+httpserver::webserver ws = httpserver::create_webserver(PORT)
+                               .use_ssl()
+                               .https_mem_key(ROOT "/key.pem")
+                               .https_mem_cert(ROOT "/cert.pem")
+                               .https_mem_trust(ROOT "/test_root_ca.pem");
 
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    ws.start(false);
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+ws.start(false);
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);  // avoid verifying ssl
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);  // avoid verifying ssl
-    curl_easy_setopt(curl, CURLOPT_URL, "https://localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L); // avoid verifying ssl
+curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L); // avoid verifying ssl
+curl_easy_setopt(curl, CURLOPT_URL, "https://localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(ssl_with_trust)
 
-void* start_ws_blocking(void* par) {
-    httpserver::webserver* ws = (httpserver::webserver*) par;
+void *start_ws_blocking(void *par)
+{
+    httpserver::webserver *ws = (httpserver::webserver *)par;
     ok_resource ok;
-    if (!ws->register_resource("base", &ok)) return PTHREAD_CANCELED;
-    try { ws->start(true); } catch (...) { return PTHREAD_CANCELED; }
+    if (!ws->register_resource("base", &ok))
+        return PTHREAD_CANCELED;
+    try
+    {
+        ws->start(true);
+    }
+    catch (...)
+    {
+        return PTHREAD_CANCELED;
+    }
 
     return nullptr;
 }
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, blocking_server)
-    httpserver::webserver ws = httpserver::create_webserver(PORT);
+httpserver::webserver ws = httpserver::create_webserver(PORT);
 
-    pthread_t tid;
-    pthread_create(&tid, nullptr, start_ws_blocking, reinterpret_cast<void*>(&ws));
+pthread_t tid;
+pthread_create(&tid, nullptr, start_ws_blocking, reinterpret_cast<void *>(&ws));
 
-    sleep(1);
+sleep(1);
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "OK");
-    curl_easy_cleanup(curl);
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "OK");
+curl_easy_cleanup(curl);
 
-    ws.stop();
+ws.stop();
 
-    char* b;
-    pthread_join(tid, reinterpret_cast<void**>(&b));
-    LT_CHECK_EQ(b, nullptr);
-    free(b);
+char *b;
+pthread_join(tid, reinterpret_cast<void **>(&b));
+LT_CHECK_EQ(b, nullptr);
+free(b);
 LT_END_AUTO_TEST(blocking_server)
 
 LT_BEGIN_AUTO_TEST(ws_start_stop_suite, custom_error_resources)
-    httpserver::webserver ws = httpserver::create_webserver(PORT)
-        .not_found_resource(not_found_custom)
-        .method_not_allowed_resource(not_allowed_custom);
+httpserver::webserver ws = httpserver::create_webserver(PORT)
+                               .not_found_resource(not_found_custom)
+                               .method_not_allowed_resource(not_allowed_custom);
 
-    ok_resource ok;
-    LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
-    ws.start(false);
+ok_resource ok;
+LT_ASSERT_EQ(true, ws.register_resource("base", &ok));
+ws.start(false);
 
-    {
+{
     curl_global_init(CURL_GLOBAL_ALL);
     std::string s;
     CURL *curl = curl_easy_init();
@@ -565,9 +581,9 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, custom_error_resources)
     LT_ASSERT_EQ(res, 0);
     LT_CHECK_EQ(s, "OK");
     curl_easy_cleanup(curl);
-    }
+}
 
-    {
+{
     curl_global_init(CURL_GLOBAL_ALL);
     std::string s;
     CURL *curl = curl_easy_init();
@@ -585,9 +601,9 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, custom_error_resources)
     LT_ASSERT_EQ(http_code, 404);
 
     curl_easy_cleanup(curl);
-    }
+}
 
-    {
+{
     ok.set_allowing("PUT", false);
 
     curl_global_init(CURL_GLOBAL_ALL);
@@ -607,13 +623,13 @@ LT_BEGIN_AUTO_TEST(ws_start_stop_suite, custom_error_resources)
     LT_ASSERT_EQ(http_code, 405);
 
     curl_easy_cleanup(curl);
-    }
+}
 
-    ws.stop();
+ws.stop();
 LT_END_AUTO_TEST(custom_error_resources)
 
 #endif
 
 LT_BEGIN_AUTO_TEST_ENV()
-    AUTORUN_TESTS()
+AUTORUN_TESTS()
 LT_END_AUTO_TEST_ENV()

@@ -18,19 +18,21 @@
      USA
 */
 
-#include "httpserver/string_response.hpp"
+#include "httpserver/string_response.h"
 #include <microhttpd.h>
 #include <stddef.h>
 #include <iosfwd>
 
 struct MHD_Response;
 
-namespace httpserver {
+namespace httpserver
+{
 
-MHD_Response* string_response::get_raw_response() {
-    size_t size = &(*content.end()) - &(*content.begin());
-    // Need to use a const cast here to satisfy MHD interface that requires a void*
-    return MHD_create_response_from_buffer(size, reinterpret_cast<void*>(const_cast<char*>(content.c_str())), MHD_RESPMEM_PERSISTENT);
-}
+    MHD_Response *string_response::get_raw_response()
+    {
+        size_t size = &(*content.end()) - &(*content.begin());
+        // Need to use a const cast here to satisfy MHD interface that requires a void*
+        return MHD_create_response_from_buffer(size, reinterpret_cast<void *>(const_cast<char *>(content.c_str())), MHD_RESPMEM_PERSISTENT);
+    }
 
-}  // namespace httpserver
+} // namespace httpserver

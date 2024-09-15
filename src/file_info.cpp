@@ -19,38 +19,48 @@
 */
 
 #include <string.h>
-#include "httpserver/file_info.hpp"
+#include "httpserver/file_info.h"
 
-namespace httpserver {
-namespace http {
+namespace httpserver
+{
+    namespace http
+    {
 
-void file_info::set_file_system_file_name(const std::string& file_system_file_name) {
-    _file_system_file_name = file_system_file_name;
-}
+        void file_info::set_file_system_file_name(const std::string &file_system_file_name)
+        {
+            _file_system_file_name = file_system_file_name;
+        }
 
-void file_info::set_content_type(const std::string& content_type) {
-    _content_type = content_type;
-}
+        void file_info::set_content_type(const std::string &content_type)
+        {
+            _content_type = content_type;
+        }
 
-void file_info::set_transfer_encoding(const std::string& transfer_encoding) {
-    _transfer_encoding = transfer_encoding;
-}
+        void file_info::set_transfer_encoding(const std::string &transfer_encoding)
+        {
+            _transfer_encoding = transfer_encoding;
+        }
 
-void file_info::grow_file_size(size_t additional_file_size) {
-    _file_size += additional_file_size;
-}
-size_t file_info::get_file_size() const {
-    return _file_size;
-}
-const std::string file_info::get_file_system_file_name() const {
-    return _file_system_file_name;
-}
-const std::string file_info::get_content_type() const {
-    return _content_type;
-}
-const std::string file_info::get_transfer_encoding() const {
-    return _transfer_encoding;
-}
+        void file_info::grow_file_size(size_t additional_file_size)
+        {
+            _file_size += additional_file_size;
+        }
+        size_t file_info::get_file_size() const
+        {
+            return _file_size;
+        }
+        const std::string file_info::get_file_system_file_name() const
+        {
+            return _file_system_file_name;
+        }
+        const std::string file_info::get_content_type() const
+        {
+            return _content_type;
+        }
+        const std::string file_info::get_transfer_encoding() const
+        {
+            return _transfer_encoding;
+        }
 
-}  // namespace http
-}  // namespace httpserver
+    } // namespace http
+} // namespace httpserver

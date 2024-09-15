@@ -19,16 +19,20 @@
 */
 
 #include <cstring>
-#include <httpserver.hpp>
+#include <httpserver.h>
 
 static int counter = 0;
 
-ssize_t test_callback(std::shared_ptr<void> closure_data, char* buf, size_t max) {
+ssize_t test_callback(std::shared_ptr<void> closure_data, char *buf, size_t max)
+{
     std::ignore = closure_data;
 
-    if (counter == 2) {
+    if (counter == 2)
+    {
         return -1;
-    } else {
+    }
+    else
+    {
         memset(buf, 0, max);
         snprintf(buf, max, "%s", " test ");
         counter++;
@@ -36,14 +40,17 @@ ssize_t test_callback(std::shared_ptr<void> closure_data, char* buf, size_t max)
     }
 }
 
-class deferred_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request&) {
-         return std::shared_ptr<httpserver::deferred_response<void> >(new httpserver::deferred_response<void>(test_callback, nullptr, "cycle callback response"));
-     }
+class deferred_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request &)
+    {
+        return std::shared_ptr<httpserver::deferred_response<void>>(new httpserver::deferred_response<void>(test_callback, nullptr, "cycle callback response"));
+    }
 };
 
-int main() {
+int main()
+{
     httpserver::webserver ws = httpserver::create_webserver(8080);
 
     deferred_resource hwr;
@@ -52,4 +59,3 @@ int main() {
 
     return 0;
 }
-

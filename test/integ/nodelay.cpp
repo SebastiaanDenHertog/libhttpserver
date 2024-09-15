@@ -23,65 +23,68 @@
 #include <memory>
 #include <string>
 
-#include "./httpserver.hpp"
-#include "./littletest.hpp"
+#include "./httpserver.h"
+#include "./littletest.h"
 
 using std::shared_ptr;
 
+using httpserver::create_webserver;
+using httpserver::http_request;
 using httpserver::http_resource;
 using httpserver::http_response;
 using httpserver::string_response;
-using httpserver::http_request;
-using httpserver::http_resource;
 using httpserver::webserver;
-using httpserver::create_webserver;
 
 #ifdef HTTPSERVER_PORT
 #define PORT HTTPSERVER_PORT
 #else
 #define PORT 8080
-#endif  // PORT
+#endif // PORT
 
 #define STR2(p) #p
 #define STR(p) STR2(p)
 #define PORT_STRING STR(PORT)
 
-class ok_resource : public http_resource {
- public:
-     shared_ptr<http_response> render_GET(const http_request&) {
-         return std::make_shared<string_response>("OK", 200, "text/plain");
-     }
+class ok_resource : public http_resource
+{
+public:
+    shared_ptr<http_response> render_GET(const http_request &)
+    {
+        return std::make_shared<string_response>("OK", 200, "text/plain");
+    }
 };
 
 LT_BEGIN_SUITE(threaded_suite)
-    std::unique_ptr<webserver> ws;
+std::unique_ptr<webserver> ws;
 
-    void set_up() {
-        ws = std::make_unique<webserver>(create_webserver(PORT));
-        ws->start(false);
-    }
+void set_up()
+{
+    ws = std::make_unique<webserver>(create_webserver(PORT));
+    ws->start(false);
+}
 
-    void tear_down() {
-        ws->stop();
-    }
+void tear_down()
+{
+    ws->stop();
+}
 LT_END_SUITE(threaded_suite)
 
 LT_BEGIN_AUTO_TEST(threaded_suite, base)
-    ok_resource resource;
-    LT_ASSERT_EQ(true, ws->register_resource("base", &resource));
-    curl_global_init(CURL_GLOBAL_ALL);
-    std::string s;
-    CURL* curl;
-    CURLcode res;
+ok_resource resource;
+LT_ASSERT_EQ(true, ws->register_resource("base", &resource));
+curl_global_init(CURL_GLOBAL_ALL);
+std::string s;
+CURL *curl;
+CURLcode res;
 
-    curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    curl_easy_cleanup(curl);
+curl = curl_easy_init();
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+curl_easy_cleanup(curl);
 LT_END_AUTO_TEST(base)
 
 LT_BEGIN_AUTO_TEST_ENV()
-    AUTORUN_TESTS()
+AUTORUN_TESTS()
 LT_END_AUTO_TEST_ENV()

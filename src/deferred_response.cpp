@@ -18,20 +18,23 @@
      USA
 */
 
-#include "httpserver/deferred_response.hpp"
+#include "httpserver/deferred_response.h"
 #include <microhttpd.h>
 #include <iosfwd>
 
 struct MHD_Response;
 
-namespace httpserver {
+namespace httpserver
+{
 
-namespace details {
+    namespace details
+    {
 
-MHD_Response* get_raw_response_helper(void* cls, ssize_t (*cb)(void*, uint64_t, char*, size_t)) {
-    return MHD_create_response_from_callback(MHD_SIZE_UNKNOWN, 1024, cb, cls, nullptr);
-}
+        MHD_Response *get_raw_response_helper(void *cls, ssize_t (*cb)(void *, uint64_t, char *, size_t))
+        {
+            return MHD_create_response_from_callback(MHD_SIZE_UNKNOWN, 1024, cb, cls, nullptr);
+        }
 
-}  // namespace details
+    } // namespace details
 
-}  // namespace httpserver
+} // namespace httpserver

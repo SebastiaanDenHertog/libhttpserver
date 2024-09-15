@@ -122,7 +122,7 @@ Here are listed the libhttpserver specific options (the canonical configure opti
 ## Getting Started
 The most basic example of creating a server and handling a requests for the path `/hello`:
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     using namespace httpserver;
 
@@ -216,7 +216,7 @@ In all these 3 cases libhttpserver would provide a standard HTTP response to the
 
 #### Example of custom errors:
 ```cpp
-      #include <httpserver.hpp>
+      #include <httpserver.h>
 
       using namespace httpserver;
 
@@ -265,7 +265,7 @@ You can also check this example on [github](https://github.com/etr/libhttpserver
 
 #### Example of custom logging callback
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
     #include <iostream>
 
     using namespace httpserver;
@@ -316,7 +316,7 @@ You can also check this example on [github](https://github.com/etr/libhttpserver
 
 #### Minimal example using HTTPS
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     using namespace httpserver;
 
@@ -404,7 +404,7 @@ Given this, the `http_resource` class contains the following extensible methods 
 
 #### Example of implementation of render methods
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     using namespace httpserver;
 
@@ -444,7 +444,7 @@ The base `http_resource` class has a set of methods that can be used to allow an
 
 #### Example of methods allowed/disallowed
 ```cpp
-      #include <httpserver.hpp>
+      #include <httpserver.h>
 
       using namespace httpserver;
 
@@ -491,7 +491,7 @@ There are essentially four ways to specify an endpoint string:
 * **A parametrized path with custom parameters.** This is the same of a normal parametrized path, but allows to specify a regular expression for the argument (e.g. `"/path/to/resource/with/{arg1|[0-9]+}/{arg2|[a-z]+}/in/url"`. In this case, the webserver will match the arguments with any value passed that satisfies the regex. In addition to this, as above, the arguments will be passed to the resource as part of the arguments (readable from the `http_request::get_arg` method - see [here](#parsing-requests)). For example, if passing `"/path/to/resource/with/{arg1|[0-9]+}/{arg2|[a-z]+}/in/url"` will match requests on URLs like `"/path/to/resource/with/10/AA/in/url"` but not like `""/path/to/resource/with/BB/10/in/url""`
 * Any of the above marked as `family`. Will match any request on URLs having path that is prefixed by the path passed. For example, if family is set to `true` and endpoint is set to `"/path"`, the webserver will route to the resource not only the requests against  `"/path"` but also everything in its nested path `"/path/on/the/previous/one"`.
 ```cpp
-      #include <httpserver.hpp>
+      #include <httpserver.h>
 
       using namespace httpserver;
 
@@ -603,7 +603,7 @@ Details on the `http_arg_value` structure.
 
 #### Example of handler reading arguments from a request
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     using namespace httpserver;
 
@@ -638,11 +638,11 @@ You can also check this example on [github](https://github.com/etr/libhttpserver
 As seen in the documentation of [http_resource](#the-resource-object), every extensible method returns in output a `http_response` object. The webserver takes the responsibility to convert the `http_response` object you create into a response on the network.
 
 There are 5 types of response that you can create - we will describe them here through their constructors:
-* _string_response(**const std::string&** content, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ The most basic type of response. It uses the `content` string passed in construction as body of the HTTP response. The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.hpp) library file.
-* _file_response(**const std::string&** filename, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ Uses the `filename` passed in construction as pointer to a file on disk. The body of the HTTP response will be set using the content of the file. The file must be a regular file and exist on disk. Otherwise libhttpserver will return an error 500 (Internal Server Error). The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.hpp) library file.
-* _basic_auth_fail_response(**const std::string&** content, **const std::string&** realm = `""`, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ A response in return to a failure during basic authentication. It allows to specify a `content` string as a message to send back to the client. The `realm` parameter should contain your realm of authentication (if any). The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.hpp) library file.
-* _digest_auth_fail_response(**const std::string&** content, **const std::string&** realm = `""`, **const std::string&** opaque = `""`, **bool** reload_nonce = `false`, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ A response in return to a failure during digest authentication. It allows to specify a `content` string as a message to send back to the client. The `realm` parameter should contain your realm of authentication (if any). The `opaque` represents a value that gets passed to the client and expected to be passed again to the server as-is. This value can be a hexadecimal or base64 string. The `reload_nonce` parameter tells the server to reload the nonce (you should use the value returned by the `check_digest_auth` method on the `http_request`. The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.hpp) library file.
-* _deferred_response(**ssize_t(&ast;cycle_callback_ptr)(shared_ptr&lt;T&gt;, char&ast;, size_t)** cycle_callback, **const std::string&** content = `""`, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ A response that obtains additional content from a callback executed in a deferred way. It leaves the client in pending state (returning a `100 CONTINUE` message) and suspends the connection. Besides the callback, optionally, you can provide a `content` parameter that sets the initial message sent immediately to the client. The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.hpp) library file. To use `deferred_response` you need to have the `deferred` option active on your webserver (enabled by default).
+* _string_response(**const std::string&** content, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ The most basic type of response. It uses the `content` string passed in construction as body of the HTTP response. The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.h) library file.
+* _file_response(**const std::string&** filename, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ Uses the `filename` passed in construction as pointer to a file on disk. The body of the HTTP response will be set using the content of the file. The file must be a regular file and exist on disk. Otherwise libhttpserver will return an error 500 (Internal Server Error). The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.h) library file.
+* _basic_auth_fail_response(**const std::string&** content, **const std::string&** realm = `""`, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ A response in return to a failure during basic authentication. It allows to specify a `content` string as a message to send back to the client. The `realm` parameter should contain your realm of authentication (if any). The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.h) library file.
+* _digest_auth_fail_response(**const std::string&** content, **const std::string&** realm = `""`, **const std::string&** opaque = `""`, **bool** reload_nonce = `false`, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ A response in return to a failure during digest authentication. It allows to specify a `content` string as a message to send back to the client. The `realm` parameter should contain your realm of authentication (if any). The `opaque` represents a value that gets passed to the client and expected to be passed again to the server as-is. This value can be a hexadecimal or base64 string. The `reload_nonce` parameter tells the server to reload the nonce (you should use the value returned by the `check_digest_auth` method on the `http_request`. The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.h) library file.
+* _deferred_response(**ssize_t(&ast;cycle_callback_ptr)(shared_ptr&lt;T&gt;, char&ast;, size_t)** cycle_callback, **const std::string&** content = `""`, **int** response_code = `200`, **const std::string&** content_type = `"text/plain"`):_ A response that obtains additional content from a callback executed in a deferred way. It leaves the client in pending state (returning a `100 CONTINUE` message) and suspends the connection. Besides the callback, optionally, you can provide a `content` parameter that sets the initial message sent immediately to the client. The other two optional parameters are the `response_code` and the `content_type`. You can find constant definition for the various response codes within the [http_utils](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.h) library file. To use `deferred_response` you need to have the `deferred` option active on your webserver (enabled by default).
 	* The `cycle_callback_ptr` has this shape:
 		_**ssize_t** cycle_callback(**shared_ptr&lt;T&gt; closure_data, char&ast;** buf, **size_t** max_size)_.
 		You are supposed to implement a function in this shape and provide it to the `deferred_repsonse` method. The webserver will provide a `char*` to the function. It is responsibility of the function to allocate it and fill its content. The method is supposed to respect the `max_size` parameter passed in input. The function must return  a `ssize_t` value representing the actual size you filled the `buf` with. Any value different from `-1` will keep the resume the connection, deliver the content and suspend it again (with a `100 CONTINUE`). If the method returns `-1`, the webserver will complete the communication with the client and close the connection. You can also pass a `shared_ptr` pointing to a data object of your choice (this will be templetized with a class of your choice). The server will guarantee that this object is passed at each invocation of the method allowing the client code to use it as a memory buffer during computation.
@@ -656,7 +656,7 @@ The `http_response` class offers an additional set of methods to "decorate" your
 
 ### Example of response setting headers
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     using namespace httpserver;
 
@@ -714,7 +714,7 @@ Examples of valid IPs include:
 
 #### Example of IP Whitelisting/Blacklisting
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     using namespace httpserver;
 
@@ -757,7 +757,7 @@ Client certificate authentication uses a X.509 certificate from the client. This
 
 ### Using Basic Authentication
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     using namespace httpserver;
 
@@ -791,7 +791,7 @@ You can also check this example on [github](https://github.com/etr/libhttpserver
 
 ### Using Digest Authentication
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     #define MY_OPAQUE "11733b200778ce33060f31c9af70a870ba96ddd4"
 
@@ -834,7 +834,7 @@ You can also check this example on [github](https://github.com/etr/libhttpserver
 [Back to TOC](#table-of-contents)
 
 ## HTTP Utils
-libhttpserver provides a set of constants to help you develop your HTTP server. It would be redundant to list them here; so, please, consult the list directly [here](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.hpp).
+libhttpserver provides a set of constants to help you develop your HTTP server. It would be redundant to list them here; so, please, consult the list directly [here](https://github.com/etr/libhttpserver/blob/master/src/httpserver/http_utils.h).
 
 [Back to TOC](#table-of-contents)
 
@@ -842,7 +842,7 @@ libhttpserver provides a set of constants to help you develop your HTTP server. 
 
 #### Example of returning a response from a file
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
 
     using namespace httpserver;
 
@@ -871,7 +871,7 @@ You can also check this example on [github](https://github.com/etr/libhttpserver
 
 #### Example of a deferred response through callback
 ```cpp
-    #include <httpserver.hpp>
+    #include <httpserver.h>
     
     using namespace httpserver;
     
@@ -915,7 +915,7 @@ You can also check this example on [github](https://github.com/etr/libhttpserver
 #### Example of a deferred response through callback (passing additional data along)
 ```cpp
     #include <atomic>
-    #include <httpserver.hpp>
+    #include <httpserver.h>
     
     using namespace httpserver;
     

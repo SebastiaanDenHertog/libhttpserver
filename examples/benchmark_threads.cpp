@@ -21,30 +21,33 @@
 #include <cstdlib>
 #include <memory>
 
-#include <httpserver.hpp>
+#include <httpserver.h>
 
 #define PATH "/plaintext"
 #define BODY "Hello, World!"
 
-class hello_world_resource : public httpserver::http_resource {
- public:
-     explicit hello_world_resource(const std::shared_ptr<httpserver::http_response>& resp):
-         resp(resp) {
-     }
+class hello_world_resource : public httpserver::http_resource
+{
+public:
+    explicit hello_world_resource(const std::shared_ptr<httpserver::http_response> &resp) : resp(resp)
+    {
+    }
 
-     std::shared_ptr<httpserver::http_response> render(const httpserver::http_request&) {
-         return resp;
-     }
+    std::shared_ptr<httpserver::http_response> render(const httpserver::http_request &)
+    {
+        return resp;
+    }
 
- private:
-     std::shared_ptr<httpserver::http_response> resp;
+private:
+    std::shared_ptr<httpserver::http_response> resp;
 };
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
     std::ignore = argc;
 
     httpserver::webserver ws = httpserver::create_webserver(atoi(argv[1]))
-        .start_method(httpserver::http::http_utils::THREAD_PER_CONNECTION);
+                                   .start_method(httpserver::http::http_utils::THREAD_PER_CONNECTION);
 
     std::shared_ptr<httpserver::http_response> hello = std::shared_ptr<httpserver::http_response>(new httpserver::string_response(BODY, 200));
     hello->with_header("Server", "libhttpserver");

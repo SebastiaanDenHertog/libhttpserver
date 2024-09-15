@@ -18,35 +18,42 @@
 
 */
 
-#include "httpserver/http_resource.hpp"
+#include "httpserver/http_resource.h"
 #include <microhttpd.h>
 #include <iosfwd>
 #include <memory>
-#include "httpserver/string_response.hpp"
+#include "httpserver/string_response.h"
 
-namespace httpserver { class http_response; }
-
-namespace httpserver {
-
-// RESOURCE
-void resource_init(std::map<std::string, bool>* method_state) {
-    (*method_state)[MHD_HTTP_METHOD_GET] = true;
-    (*method_state)[MHD_HTTP_METHOD_POST] = true;
-    (*method_state)[MHD_HTTP_METHOD_PUT] = true;
-    (*method_state)[MHD_HTTP_METHOD_HEAD] = true;
-    (*method_state)[MHD_HTTP_METHOD_DELETE] = true;
-    (*method_state)[MHD_HTTP_METHOD_TRACE] = true;
-    (*method_state)[MHD_HTTP_METHOD_CONNECT] = true;
-    (*method_state)[MHD_HTTP_METHOD_OPTIONS] = true;
-    (*method_state)[MHD_HTTP_METHOD_PATCH] = true;
+namespace httpserver
+{
+    class http_response;
 }
 
-namespace details {
+namespace httpserver
+{
 
-std::shared_ptr<http_response> empty_render(const http_request&) {
-    return std::make_shared<string_response>();
-}
+    // RESOURCE
+    void resource_init(std::map<std::string, bool> *method_state)
+    {
+        (*method_state)[MHD_HTTP_METHOD_GET] = true;
+        (*method_state)[MHD_HTTP_METHOD_POST] = true;
+        (*method_state)[MHD_HTTP_METHOD_PUT] = true;
+        (*method_state)[MHD_HTTP_METHOD_HEAD] = true;
+        (*method_state)[MHD_HTTP_METHOD_DELETE] = true;
+        (*method_state)[MHD_HTTP_METHOD_TRACE] = true;
+        (*method_state)[MHD_HTTP_METHOD_CONNECT] = true;
+        (*method_state)[MHD_HTTP_METHOD_OPTIONS] = true;
+        (*method_state)[MHD_HTTP_METHOD_PATCH] = true;
+    }
 
-}  // namespace details
+    namespace details
+    {
 
-}  // namespace httpserver
+        std::shared_ptr<http_response> empty_render(const http_request &)
+        {
+            return std::make_shared<string_response>();
+        }
+
+    } // namespace details
+
+} // namespace httpserver

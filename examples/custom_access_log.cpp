@@ -20,22 +20,26 @@
 
 #include <iostream>
 
-#include <httpserver.hpp>
+#include <httpserver.h>
 
-void custom_access_log(const std::string& url) {
+void custom_access_log(const std::string &url)
+{
     std::cout << "ACCESSING: " << url << std::endl;
 }
 
-class hello_world_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render(const httpserver::http_request&) {
-         return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Hello, World!"));
-     }
+class hello_world_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render(const httpserver::http_request &)
+    {
+        return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Hello, World!"));
+    }
 };
 
-int main() {
+int main()
+{
     httpserver::webserver ws = httpserver::create_webserver(8080)
-        .log_access(custom_access_log);
+                                   .log_access(custom_access_log);
 
     hello_world_resource hwr;
     ws.register_resource("/hello", &hwr);

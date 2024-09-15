@@ -37,36 +37,42 @@
 #include <cstring>
 #include <memory>
 
-#include "./httpserver.hpp"
-#include "./littletest.hpp"
+#include "./httpserver.h"
+#include "./littletest.h"
 
 using std::shared_ptr;
 using std::string;
 
-using httpserver::webserver;
 using httpserver::create_webserver;
-using httpserver::http_response;
+using httpserver::deferred_response;
 using httpserver::http_request;
 using httpserver::http_resource;
-using httpserver::deferred_response;
+using httpserver::http_response;
+using httpserver::webserver;
 
-size_t writefunc(void *ptr, size_t size, size_t nmemb, string *s) {
-    s->append(reinterpret_cast<char*>(ptr), size*nmemb);
-    return size*nmemb;
+size_t writefunc(void *ptr, size_t size, size_t nmemb, string *s)
+{
+    s->append(reinterpret_cast<char *>(ptr), size * nmemb);
+    return size * nmemb;
 }
 
 static int counter = 0;
 
-struct test_data {
+struct test_data
+{
     int value;
 };
 
-ssize_t test_callback(shared_ptr<void> closure_data, char* buf, size_t max) {
+ssize_t test_callback(shared_ptr<void> closure_data, char *buf, size_t max)
+{
     std::ignore = closure_data;
 
-    if (counter == 2) {
+    if (counter == 2)
+    {
         return -1;
-    } else {
+    }
+    else
+    {
         memset(buf, 0, max);
         snprintf(buf, max, "%s", "test");
         counter++;
@@ -74,10 +80,14 @@ ssize_t test_callback(shared_ptr<void> closure_data, char* buf, size_t max) {
     }
 }
 
-ssize_t test_callback_with_data(shared_ptr<test_data> closure_data, char* buf, size_t max) {
-    if (counter == 2) {
+ssize_t test_callback_with_data(shared_ptr<test_data> closure_data, char *buf, size_t max)
+{
+    if (counter == 2)
+    {
         return -1;
-    } else {
+    }
+    else
+    {
         memset(buf, 0, max);
         snprintf(buf, max, "%s%s", "test", std::to_string(closure_data->value).c_str());
 
@@ -88,83 +98,89 @@ ssize_t test_callback_with_data(shared_ptr<test_data> closure_data, char* buf, s
     }
 }
 
-class deferred_resource : public http_resource {
- public:
-     shared_ptr<http_response> render_GET(const http_request&) {
-         return std::make_shared<deferred_response<void>>(test_callback, nullptr, "cycle callback response");
-     }
+class deferred_resource : public http_resource
+{
+public:
+    shared_ptr<http_response> render_GET(const http_request &)
+    {
+        return std::make_shared<deferred_response<void>>(test_callback, nullptr, "cycle callback response");
+    }
 };
 
-class deferred_resource_with_data : public http_resource {
- public:
-     shared_ptr<http_response> render_GET(const http_request&) {
-         auto internal_info = std::make_shared<test_data>();
-         internal_info->value = 42;
-         return std::make_shared<deferred_response<test_data>>(test_callback_with_data, internal_info, "cycle callback response");
-     }
+class deferred_resource_with_data : public http_resource
+{
+public:
+    shared_ptr<http_response> render_GET(const http_request &)
+    {
+        auto internal_info = std::make_shared<test_data>();
+        internal_info->value = 42;
+        return std::make_shared<deferred_response<test_data>>(test_callback_with_data, internal_info, "cycle callback response");
+    }
 };
 
 #ifdef HTTPSERVER_PORT
 #define PORT HTTPSERVER_PORT
 #else
 #define PORT 8080
-#endif  // PORT
+#endif // PORT
 
 #define STR2(p) #p
 #define STR(p) STR2(p)
 #define PORT_STRING STR(PORT)
 
 LT_BEGIN_SUITE(deferred_suite)
-    std::unique_ptr<webserver> ws;
+std::unique_ptr<webserver> ws;
 
-    void set_up() {
-        ws = std::make_unique<webserver>(create_webserver(PORT));
-        ws->start(false);
-    }
+void set_up()
+{
+    ws = std::make_unique<webserver>(create_webserver(PORT));
+    ws->start(false);
+}
 
-    void tear_down() {
-        counter = 0;
+void tear_down()
+{
+    counter = 0;
 
-        ws->stop();
-    }
+    ws->stop();
+}
 LT_END_SUITE(deferred_suite)
 
 LT_BEGIN_AUTO_TEST(deferred_suite, deferred_response_suite)
-    deferred_resource resource;
-    LT_ASSERT_EQ(true, ws->register_resource("base", &resource));
-    curl_global_init(CURL_GLOBAL_ALL);
+deferred_resource resource;
+LT_ASSERT_EQ(true, ws->register_resource("base", &resource));
+curl_global_init(CURL_GLOBAL_ALL);
 
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "testtest");
-    curl_easy_cleanup(curl);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "testtest");
+curl_easy_cleanup(curl);
 LT_END_AUTO_TEST(deferred_response_suite)
 
 LT_BEGIN_AUTO_TEST(deferred_suite, deferred_response_with_data)
-    deferred_resource_with_data resource;
-    LT_ASSERT_EQ(true, ws->register_resource("base", &resource));
-    curl_global_init(CURL_GLOBAL_ALL);
+deferred_resource_with_data resource;
+LT_ASSERT_EQ(true, ws->register_resource("base", &resource));
+curl_global_init(CURL_GLOBAL_ALL);
 
-    std::string s;
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-    res = curl_easy_perform(curl);
-    LT_ASSERT_EQ(res, 0);
-    LT_CHECK_EQ(s, "test42test84");
-    curl_easy_cleanup(curl);
+std::string s;
+CURL *curl = curl_easy_init();
+CURLcode res;
+curl_easy_setopt(curl, CURLOPT_URL, "localhost:" PORT_STRING "/base");
+curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+res = curl_easy_perform(curl);
+LT_ASSERT_EQ(res, 0);
+LT_CHECK_EQ(s, "test42test84");
+curl_easy_cleanup(curl);
 LT_END_AUTO_TEST(deferred_response_with_data)
 
 LT_BEGIN_AUTO_TEST_ENV()
-    AUTORUN_TESTS()
+AUTORUN_TESTS()
 LT_END_AUTO_TEST_ENV()

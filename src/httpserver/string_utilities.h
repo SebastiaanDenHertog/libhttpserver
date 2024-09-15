@@ -18,8 +18,8 @@
      USA
 */
 
-#if !defined (_HTTPSERVER_HPP_INSIDE_) && !defined (HTTPSERVER_COMPILATION)
-#error "Only <httpserver.hpp> or <httpserverpp> can be included directly."
+#if !defined(_HTTPSERVER_HPP_INSIDE_) && !defined(HTTPSERVER_COMPILATION)
+#error "Only <httpserver.h> or <httpserverpp> can be included directly."
 #endif
 
 #ifndef SRC_HTTPSERVER_STRING_UTILITIES_HPP_
@@ -28,22 +28,24 @@
 #include <string>
 #include <vector>
 
-namespace httpserver {
+namespace httpserver
+{
 
-namespace string_utilities {
+     namespace string_utilities
+     {
 
-/**
- * Function used to convert a string to its uppercase version.
- * It generates a new string in output
- * @param str The string to turn uppercase
- * @return a string that is the uppercase version of the previous
-**/
-const std::string to_upper_copy(const std::string& str);
-const std::string to_lower_copy(const std::string& str);
-const std::vector<std::string> string_split(const std::string& s, char sep = ' ', bool collapse = true);
+          /**
+           * Function used to convert a string to its uppercase version.
+           * It generates a new string in output
+           * @param str The string to turn uppercase
+           * @return a string that is the uppercase version of the previous
+           **/
+          const std::string to_upper_copy(const std::string &str);
+          const std::string to_lower_copy(const std::string &str);
+          const std::vector<std::string> string_split(const std::string &s, char sep = ' ', bool collapse = true);
 
-}  // namespace string_utilities
+     } // namespace string_utilities
 
-}  // namespace httpserver
+} // namespace httpserver
 
-#endif  // SRC_HTTPSERVER_STRING_UTILITIES_HPP_
+#endif // SRC_HTTPSERVER_STRING_UTILITIES_HPP_

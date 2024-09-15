@@ -18,17 +18,19 @@
      USA
 */
 
-#include "httpserver/basic_auth_fail_response.hpp"
+#include "httpserver/basic_auth_fail_response.h"
 #include <microhttpd.h>
 #include <iosfwd>
 
 struct MHD_Connection;
 struct MHD_Response;
 
-namespace httpserver {
+namespace httpserver
+{
 
-int basic_auth_fail_response::enqueue_response(MHD_Connection* connection, MHD_Response* response) {
-    return MHD_queue_basic_auth_fail_response(connection, realm.c_str(), response);
-}
+    int basic_auth_fail_response::enqueue_response(MHD_Connection *connection, MHD_Response *response)
+    {
+        return MHD_queue_basic_auth_fail_response(connection, realm.c_str(), response);
+    }
 
-}  // namespace httpserver
+} // namespace httpserver

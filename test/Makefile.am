@@ -36,7 +36,7 @@ http_endpoint_SOURCES = unit/http_endpoint_test.cpp
 nodelay_SOURCES = integ/nodelay.cpp
 http_resource_SOURCES = unit/http_resource_test.cpp
 
-noinst_HEADERS = littletest.hpp
+noinst_HEADERS = littletest.h
 AM_CXXFLAGS += -lcurl -Wall -fPIC
 
 if COND_GCOV

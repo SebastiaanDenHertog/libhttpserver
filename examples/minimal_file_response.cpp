@@ -18,16 +18,19 @@
      USA
 */
 
-#include <httpserver.hpp>
+#include <httpserver.h>
 
-class file_response_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request&) {
-         return std::shared_ptr<httpserver::file_response>(new httpserver::file_response("test_content", 200, "text/plain"));
-     }
+class file_response_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request &)
+    {
+        return std::shared_ptr<httpserver::file_response>(new httpserver::file_response("test_content", 200, "text/plain"));
+    }
 };
 
-int main() {
+int main()
+{
     httpserver::webserver ws = httpserver::create_webserver(8080);
 
     file_response_resource hwr;

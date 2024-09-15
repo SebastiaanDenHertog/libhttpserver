@@ -25,22 +25,29 @@
 #include <chrono> // NOLINT [build/c++11]
 #include <thread> // NOLINT [build/c++11]
 
-#include <httpserver.hpp>
+#include <httpserver.h>
 
 std::atomic<int> counter;
 
-ssize_t test_callback(std::shared_ptr<std::atomic<int> > closure_data, char* buf, size_t max) {
+ssize_t test_callback(std::shared_ptr<std::atomic<int>> closure_data, char *buf, size_t max)
+{
     int reqid;
-    if (closure_data == nullptr) {
+    if (closure_data == nullptr)
+    {
         reqid = -1;
-    } else {
+    }
+    else
+    {
         reqid = *closure_data;
     }
 
     // only first 5 connections can be established
-    if (reqid >= 5) {
+    if (reqid >= 5)
+    {
         return -1;
-    } else {
+    }
+    else
+    {
         // respond corresponding request IDs to the clients
         std::string str = "";
         str += std::to_string(reqid) + " ";
@@ -55,15 +62,18 @@ ssize_t test_callback(std::shared_ptr<std::atomic<int> > closure_data, char* buf
     }
 }
 
-class deferred_resource : public httpserver::http_resource {
- public:
-     std::shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request&) {
-         std::shared_ptr<std::atomic<int> > closure_data(new std::atomic<int>(counter++));
-         return std::shared_ptr<httpserver::deferred_response<std::atomic<int> > >(new httpserver::deferred_response<std::atomic<int> >(test_callback, closure_data, "cycle callback response"));
-     }
+class deferred_resource : public httpserver::http_resource
+{
+public:
+    std::shared_ptr<httpserver::http_response> render_GET(const httpserver::http_request &)
+    {
+        std::shared_ptr<std::atomic<int>> closure_data(new std::atomic<int>(counter++));
+        return std::shared_ptr<httpserver::deferred_response<std::atomic<int>>>(new httpserver::deferred_response<std::atomic<int>>(test_callback, closure_data, "cycle callback response"));
+    }
 };
 
-int main() {
+int main()
+{
     httpserver::webserver ws = httpserver::create_webserver(8080);
 
     deferred_resource hwr;
@@ -72,4 +82,3 @@ int main() {
 
     return 0;
 }
-

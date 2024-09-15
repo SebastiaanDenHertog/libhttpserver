@@ -18,8 +18,8 @@
      USA
 */
 
-#if !defined (_HTTPSERVER_HPP_INSIDE_) && !defined (HTTPSERVER_COMPILATION)
-#error "Only <httpserver.hpp> or <httpserverpp> can be included directly."
+#if !defined(_HTTPSERVER_HPP_INSIDE_) && !defined(HTTPSERVER_COMPILATION)
+#error "Only <httpserver.h> or <httpserverpp> can be included directly."
 #endif
 
 #ifndef SRC_HTTPSERVER_DETAILS_MODDED_REQUEST_HPP_
@@ -29,45 +29,50 @@
 #include <memory>
 #include <fstream>
 
-#include "httpserver/http_request.hpp"
+#include "httpserver/http_request.h"
 
-namespace httpserver {
+namespace httpserver
+{
 
-namespace details {
+    namespace details
+    {
 
-struct modded_request {
-    struct MHD_PostProcessor *pp = nullptr;
-    std::unique_ptr<std::string> complete_uri;
-    std::unique_ptr<std::string> standardized_url;
-    webserver* ws = nullptr;
+        struct modded_request
+        {
+            struct MHD_PostProcessor *pp = nullptr;
+            std::unique_ptr<std::string> complete_uri;
+            std::unique_ptr<std::string> standardized_url;
+            webserver *ws = nullptr;
 
-    std::shared_ptr<http_response> (httpserver::http_resource::*callback)(const httpserver::http_request&);
+            std::shared_ptr<http_response> (httpserver::http_resource::*callback)(const httpserver::http_request &);
 
-    std::unique_ptr<http_request> dhr = nullptr;
-    std::shared_ptr<http_response> dhrs;
-    bool has_body = false;
+            std::unique_ptr<http_request> dhr = nullptr;
+            std::shared_ptr<http_response> dhrs;
+            bool has_body = false;
 
-    std::string upload_key;
-    std::string upload_filename;
-    std::unique_ptr<std::ofstream> upload_ostrm;
+            std::string upload_key;
+            std::string upload_filename;
+            std::unique_ptr<std::ofstream> upload_ostrm;
 
-    modded_request() = default;
+            modded_request() = default;
 
-    modded_request(const modded_request& b) = delete;
-    modded_request(modded_request&& b) = default;
+            modded_request(const modded_request &b) = delete;
+            modded_request(modded_request &&b) = default;
 
-    modded_request& operator=(const modded_request& b) = delete;
-    modded_request& operator=(modded_request&& b) = default;
+            modded_request &operator=(const modded_request &b) = delete;
+            modded_request &operator=(modded_request &&b) = default;
 
-    ~modded_request() {
-        if (nullptr != pp) {
-            MHD_destroy_post_processor(pp);
-        }
-    }
-};
+            ~modded_request()
+            {
+                if (nullptr != pp)
+                {
+                    MHD_destroy_post_processor(pp);
+                }
+            }
+        };
 
-}  // namespace details
+    } // namespace details
 
-}  // namespace httpserver
+} // namespace httpserver
 
-#endif  // SRC_HTTPSERVER_DETAILS_MODDED_REQUEST_HPP_
+#endif // SRC_HTTPSERVER_DETAILS_MODDED_REQUEST_HPP_
