@@ -1,75 +1,78 @@
 cmake_minimum_required(VERSION 3.10)
+project(libhttpserver VERSION 0.19.0 LANGUAGES CXX)
 
-# Define project name and version
-project(LIBHTTPSERVER VERSION 1.0 LANGUAGES CXX)
+# C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set C++ standard
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+# Options
+option(ENABLE_DEBUG "Enable debug mode" OFF)
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+option(ENABLE_EXAMPLES "Build examples" ON)
+option(ENABLE_FASTOPEN "Enable TCP_FASTOPEN support" ON)
+option(ENABLE_STATIC "Enable static linking" ON)
+option(WITH_TLS "Enable TLS support" ON)
+option(ENABLE_TESTS "Build tests" ON) # Add option to control whether to build tests
 
-# Include directories
-include_directories(src)
-include_directories(src/httpserver)
+# Compiler flags
+if(ENABLE_DEBUG)
+    add_definitions(-DDEBUG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Werror -pedantic")
+else()
+    add_definitions(-DNDEBUG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+endif()
 
-# Add source files
-file(GLOB SRC_FILES
-    "src/*.cpp"
-    "src/httpserver/*.cpp"
-    "src/details/*.cpp"
+if(ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+endif()
+
+# External libraries
+find_package(Threads REQUIRED)
+
+# Find libmicrohttpd
+find_path(LIBMICROHTTPD_INCLUDE_DIR NAMES microhttpd.h)
+find_library(LIBMICROHTTPD_LIBRARY NAMES microhttpd)
+
+if(NOT LIBMICROHTTPD_INCLUDE_DIR OR NOT LIBMICROHTTPD_LIBRARY)
+    message(FATAL_ERROR "libmicrohttpd >= 0.9.64 not found")
+endif()
+
+# Include directories for src and headers
+include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${LIBMICROHTTPD_INCLUDE_DIR})
+
+# Collect source files
+file(GLOB_RECURSE LIBHTTPSERVER_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
-# Option to build examples and tests
-option(BUILD_EXAMPLES "Build the example programs" OFF)
-option(BUILD_TESTING "Build the tests" OFF)
+# Create the libhttpserver library
+add_library(libhttpserver SHARED ${LIBHTTPSERVER_SOURCES})
 
-# Create a library from the source files
-add_library(httpserver_lib STATIC ${SRC_FILES})
+target_compile_definitions(libhttpserver PRIVATE HTTPSERVER_COMPILATION)
 
-# Conditionally build examples if BUILD_EXAMPLES is ON
-if(BUILD_EXAMPLES)
-    # Add the examples
-    file(GLOB EXAMPLES
-        "examples/*.cpp"
-    )
-    
-    # Add example executables for each example and prepend "example_" to avoid name conflicts
-    foreach(example_file ${EXAMPLES})
-        get_filename_component(example_name ${example_file} NAME_WE)
-        set(example_target "example_${example_name}")
-        add_executable(${example_target} ${example_file})
-        target_link_libraries(${example_target} httpserver_lib)
+# Link libraries
+target_link_libraries(libhttpserver PRIVATE ${LIBMICROHTTPD_LIBRARY} Threads::Threads)
+
+# Install the library and headers
+install(TARGETS libhttpserver DESTINATION lib)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/httpserver DESTINATION include)
+
+# Examples
+if(ENABLE_EXAMPLES)
+    file(GLOB EXAMPLES_SOURCES ${CMAKE_SOURCE_DIR}/examples/*.cpp)
+
+    foreach(EXAMPLE_FILE ${EXAMPLES_SOURCES})
+        get_filename_component(EXAMPLE_NAME ${EXAMPLE_FILE} NAME_WE)
+        add_executable(${EXAMPLE_NAME} ${EXAMPLE_FILE})
+        target_link_libraries(${EXAMPLE_NAME} libhttpserver)
+        install(TARGETS ${EXAMPLE_NAME} DESTINATION bin)
     endforeach()
 endif()
 
-# Conditionally build tests if BUILD_TESTING is ON
-if(BUILD_TESTING)
-    # Add the test files
-    file(GLOB UNIT_TESTS
-        "test/unit/*.cpp"
-    )
-
-    # Add the integration test files
-    file(GLOB INTEG_TESTS
-        "test/integ/*.cpp"
-    )
-
-    # Define the unit tests
-    foreach(test_file ${UNIT_TESTS})
-        get_filename_component(test_name ${test_file} NAME_WE)
-        add_executable(${test_name} ${test_file})
-        target_link_libraries(${test_name} httpserver_lib)
-        add_test(NAME ${test_name} COMMAND ${test_name})
-    endforeach()
-
-    # Define the integration tests
-    foreach(test_file ${INTEG_TESTS})
-        get_filename_component(test_name ${test_file} NAME_WE)
-        add_executable(${test_name} ${test_file})
-        target_link_libraries(${test_name} httpserver_lib)
-        add_test(NAME ${test_name} COMMAND ${test_name})
-    endforeach()
-
-    # Enable testing
+# Tests
+if(ENABLE_TESTS)
     enable_testing()
+    add_subdirectory(test)
 endif()
-
