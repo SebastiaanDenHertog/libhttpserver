@@ -45,6 +45,32 @@
 #include "httpserver/http_utils.h"
 #include "httpserver/file_info.h"
 
+// Custom string_view for C++11, standard string_view for C++17 and above
+#if __cplusplus >= 201703L
+#include <string_view>
+namespace httpserver
+{
+    using string_view = std::string_view;
+}
+#else
+#include "include/utils/string_view.h" // Use custom string_view for C++11
+namespace httpserver
+{
+    using string_view = StringView;
+}
+
+#include <memory>
+
+namespace std
+{
+    template <typename T, typename... Args>
+    std::unique_ptr<T> make_unique(Args &&...args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+}
+#endif
+
 struct MHD_Connection;
 
 namespace httpserver
@@ -67,25 +93,25 @@ namespace httpserver
          * Method used to get the username eventually passed through basic authentication.
          * @return string representation of the username.
          **/
-        std::string_view get_user() const;
+        string_view get_user() const;
 
         /**
          * Method used to get the username extracted from a digest authentication
          * @return the username
          **/
-        std::string_view get_digested_user() const;
+        string_view get_digested_user() const;
 
         /**
          * Method used to get the password eventually passed through basic authentication.
          * @return string representation of the password.
          **/
-        std::string_view get_pass() const;
+        string_view get_pass() const;
 
         /**
          * Method used to get the path requested
          * @return string representing the path requested.
          **/
-        std::string_view get_path() const
+        string_view get_path() const
         {
             return path;
         }
@@ -118,7 +144,7 @@ namespace httpserver
          * Method used to get the METHOD used to make the request.
          * @return string representing the method.
          **/
-        std::string_view get_method() const
+        string_view get_method() const
         {
             return method;
         }
@@ -155,7 +181,7 @@ namespace httpserver
          * values, one value is chosen and returned.
          * @result the size of the map
          **/
-        const std::map<std::string_view, std::string_view, http::arg_comparator> get_args_flat() const;
+        const std::map<httpserver::string_view, httpserver::string_view, httpserver::http::arg_comparator> get_args_flat() const;
 
         /**
          * Method to get or create a file info struct in the map if the provided filename is already in the map
@@ -179,23 +205,23 @@ namespace httpserver
          * @param key the specific header to get the value from
          * @return the value of the header.
          **/
-        std::string_view get_header(std::string_view key) const;
+        string_view get_header(string_view key) const;
 
-        std::string_view get_cookie(std::string_view key) const;
+        string_view get_cookie(string_view key) const;
 
         /**
          * Method used to get a specific footer passed with the request.
          * @param key the specific footer to get the value from
          * @return the value of the footer.
          **/
-        std::string_view get_footer(std::string_view key) const;
+        string_view get_footer(string_view key) const;
 
         /**
          * Method used to get a specific argument passed with the request.
          * @param ket the specific argument to get the value from
          * @return the value(s) of the arg.
          **/
-        http_arg_value get_arg(std::string_view key) const;
+        http_arg_value get_arg(string_view key) const;
 
         /**
          * Method used to get a specific argument passed with the request.
@@ -203,13 +229,13 @@ namespace httpserver
          * @param ket the specific argument to get the value from
          * @return the value of the arg.
          **/
-        std::string_view get_arg_flat(std::string_view key) const;
+        string_view get_arg_flat(string_view key) const;
 
         /**
          * Method used to get the content of the request.
          * @return the content in string representation
          **/
-        std::string_view get_content() const
+        string_view get_content() const
         {
             return content;
         }
@@ -226,13 +252,13 @@ namespace httpserver
          * Method used to get the content of the query string..
          * @return the query string in string representation
          **/
-        std::string_view get_querystring() const;
+        string_view get_querystring() const;
 
         /**
          * Method used to get the version of the request.
          * @return the version in string representation
          **/
-        std::string_view get_version() const
+        string_view get_version() const
         {
             return version;
         }
@@ -255,7 +281,7 @@ namespace httpserver
          * Method used to get the requestor.
          * @return the requestor
          **/
-        std::string_view get_requestor() const;
+        string_view get_requestor() const;
 
         /**
          * Method used to get the requestor port used.
@@ -422,7 +448,7 @@ namespace httpserver
             }
         }
 
-        std::string_view get_connection_value(std::string_view key, enum MHD_ValueKind kind) const;
+        string_view get_connection_value(string_view key, enum MHD_ValueKind kind) const;
         const http::header_view_map get_headerlike_values(enum MHD_ValueKind kind) const;
 
         // Cache certain data items on demand so we can consistently return views

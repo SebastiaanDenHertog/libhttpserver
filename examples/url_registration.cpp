@@ -34,7 +34,8 @@ class handling_multiple_resource : public httpserver::http_resource
 public:
     std::shared_ptr<httpserver::http_response> render(const httpserver::http_request &req)
     {
-        return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Your URL: " + std::string(req.get_path())));
+        return std::make_shared<httpserver::string_response>(
+            "Your URL: " + std::string(req.get_path().data(), req.get_path().size()));
     }
 };
 

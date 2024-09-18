@@ -69,7 +69,7 @@ namespace httpserver
             http::header_view_map view_map;
             for (const auto &item : hdr_map)
             {
-                view_map[std::string_view(item.first)] = std::string_view(item.second);
+                view_map[string_view(item.first)] = string_view(item.second);
             }
             return view_map;
         }

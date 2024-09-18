@@ -27,10 +27,14 @@ public:
     {
         if (req.get_user() != "myuser" || req.get_pass() != "mypass")
         {
-            return std::shared_ptr<httpserver::basic_auth_fail_response>(new httpserver::basic_auth_fail_response("FAIL", "test@example.com"));
+            return std::make_shared<httpserver::basic_auth_fail_response>("FAIL", "test@example.com");
         }
 
-        return std::shared_ptr<httpserver::string_response>(new httpserver::string_response(std::string(req.get_user()) + " " + std::string(req.get_pass()), 200, "text/plain"));
+        // Explicitly convert string_view to std::string
+        return std::make_shared<httpserver::string_response>(
+            std::string(req.get_user().data(), req.get_user().size()) + " " +
+                std::string(req.get_pass().data(), req.get_pass().size()),
+            200, "text/plain");
     }
 };
 

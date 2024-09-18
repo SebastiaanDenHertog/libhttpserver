@@ -616,7 +616,8 @@ namespace httpserver
                 os << "    " << prefix << " [";
                 for (; it != end; ++it)
                 {
-                    os << (*it).first << ":\"" << (*it).second << "\" ";
+                    os << std::string((*it).first.data(), (*it).first.size()) << ":\""
+                       << std::string((*it).second.data(), (*it).second.size()) << "\"";
                 }
                 os << "]" << std::endl;
             }
@@ -627,16 +628,16 @@ namespace httpserver
             auto it = map.begin();
             auto end = map.end();
 
-            if (map.size())
+            if (!map.empty())
             {
                 os << "    " << prefix << " [";
                 for (; it != end; ++it)
                 {
-                    os << (*it).first << ":[";
+                    os << std::string(it->first.data(), it->first.size()) << ":["; // Convert string_view to std::string
                     std::string sep = "";
                     for (const auto &v : it->second.values)
                     {
-                        os << sep << "\"" << v << "\"";
+                        os << sep << "\"" << std::string(v.data(), v.size()) << "\""; // Convert string_view to std::string
                         sep = ", ";
                     }
                     os << "] ";

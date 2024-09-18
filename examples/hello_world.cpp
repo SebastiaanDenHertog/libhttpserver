@@ -22,6 +22,20 @@
 
 #include <httpserver.h>
 
+#if __cplusplus >= 201703L
+#include <string_view>
+namespace httpserver
+{
+    using string_view = std::string_view;
+}
+#else
+#include "include/utils/string_view.h" // Use custom string_view for C++11
+namespace httpserver
+{
+    using string_view = StringView;
+}
+#endif
+
 class hello_world_resource : public httpserver::http_resource
 {
 public:
@@ -30,17 +44,21 @@ public:
     std::string data;
 };
 
-// Using the render method you are able to catch each type of request you receive
 std::shared_ptr<httpserver::http_response> hello_world_resource::render(const httpserver::http_request &req)
 {
     // It is possible to store data inside the resource object that can be altered through the requests
     std::cout << "Data was: " << data << std::endl;
-    std::string_view datapar = req.get_arg("data");
-    set_some_data(datapar == "" ? "no data passed!!!" : std::string(datapar));
+
+    // Corrected: use httpserver::string_view
+    httpserver::string_view datapar = req.get_arg("data");
+
+    // Convert string_view to std::string explicitly
+    set_some_data(datapar.empty() ? "no data passed!!!" : std::string(datapar.data(), datapar.size()));
+
     std::cout << "Now data is:" << data << std::endl;
 
     // It is possible to send a response initializing an http_string_response that reads the content to send in response from a string.
-    return std::shared_ptr<httpserver::http_response>(new httpserver::string_response("Hello World!!!", 200));
+    return std::make_shared<httpserver::string_response>("Hello World!!!", 200);
 }
 
 int main()

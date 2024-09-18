@@ -26,6 +26,21 @@
 #include "httpserver/http_utils.h"
 #include "httpserver/string_utilities.h"
 
+// Custom string_view for C++11, standard string_view for C++17 and above
+#if __cplusplus >= 201703L
+#include <string_view>
+namespace httpserver
+{
+    using string_view = std::string_view;
+}
+#else
+#include "include/utils/string_view.h" // Use custom string_view for C++11
+namespace httpserver
+{
+    using string_view = StringView;
+}
+#endif
+
 namespace httpserver
 {
 
@@ -44,7 +59,7 @@ namespace httpserver
 
     bool http_request::check_digest_auth(const std::string &realm, const std::string &password, int nonce_timeout, bool *reload_nonce) const
     {
-        std::string_view digested_user = get_digested_user();
+        string_view digested_user = get_digested_user();
 
         int val = MHD_digest_auth_check(underlying_connection, realm.c_str(), digested_user.data(), password.c_str(), nonce_timeout);
 
@@ -62,7 +77,7 @@ namespace httpserver
         return true;
     }
 
-    std::string_view http_request::get_connection_value(std::string_view key, enum MHD_ValueKind kind) const
+    string_view http_request::get_connection_value(string_view key, enum MHD_ValueKind kind) const
     {
         const char *header_c = MHD_lookup_connection_value(underlying_connection, kind, key.data());
 
@@ -91,7 +106,7 @@ namespace httpserver
         return headers;
     }
 
-    std::string_view http_request::get_header(std::string_view key) const
+    string_view http_request::get_header(string_view key) const
     {
         return get_connection_value(key, MHD_HEADER_KIND);
     }
@@ -101,7 +116,7 @@ namespace httpserver
         return get_headerlike_values(MHD_HEADER_KIND);
     }
 
-    std::string_view http_request::get_footer(std::string_view key) const
+    string_view http_request::get_footer(string_view key) const
     {
         return get_connection_value(key, MHD_FOOTER_KIND);
     }
@@ -111,7 +126,7 @@ namespace httpserver
         return get_headerlike_values(MHD_FOOTER_KIND);
     }
 
-    std::string_view http_request::get_cookie(std::string_view key) const
+    string_view http_request::get_cookie(string_view key) const
     {
         return get_connection_value(key, MHD_COOKIE_KIND);
     }
@@ -156,11 +171,13 @@ namespace httpserver
         }
     }
 
-    http_arg_value http_request::get_arg(std::string_view key) const
+    http_arg_value http_request::get_arg(httpserver::string_view key) const
     {
         populate_args();
 
-        auto it = cache->unescaped_args.find(key);
+        // Convert string_view to std::string for the map lookup
+        auto it = cache->unescaped_args.find(std::string(key.data(), key.size()));
+
         if (it != cache->unescaped_args.end())
         {
             http_arg_value arg;
@@ -174,9 +191,9 @@ namespace httpserver
         return http_arg_value();
     }
 
-    std::string_view http_request::get_arg_flat(std::string_view key) const
+    string_view http_request::get_arg_flat(string_view key) const
     {
-        auto const it = cache->unescaped_args.find(key);
+        auto const it = cache->unescaped_args.find(std::string(key.data(), key.size()));
 
         if (it != cache->unescaped_args.end())
         {
@@ -202,10 +219,10 @@ namespace httpserver
         return arguments;
     }
 
-    const std::map<std::string_view, std::string_view, http::arg_comparator> http_request::get_args_flat() const
+    const std::map<string_view, string_view, http::arg_comparator> http_request::get_args_flat() const
     {
         populate_args();
-        std::map<std::string_view, std::string_view, http::arg_comparator> ret;
+        std::map<string_view, string_view, http::arg_comparator> ret;
         for (const auto &[key, val] : cache->unescaped_args)
         {
             ret[key] = val[0];
@@ -218,7 +235,7 @@ namespace httpserver
         return files[key][upload_file_name];
     }
 
-    std::string_view http_request::get_querystring() const
+    string_view http_request::get_querystring() const
     {
         if (!cache->querystring.empty())
         {
@@ -250,16 +267,16 @@ namespace httpserver
 
         std::string *querystring = static_cast<std::string *>(cls);
 
-        std::string_view key = key_value;
-        std::string_view value = ((arg_value == nullptr) ? "" : arg_value);
+        string_view key = key_value;
+        string_view value = ((arg_value == nullptr) ? "" : arg_value);
 
         // Limit to a single allocation.
         querystring->reserve(querystring->size() + key.size() + value.size() + 3);
 
         *querystring += ((*querystring == "") ? "?" : "&");
-        *querystring += key;
+        *querystring += std::string(key.data(), key.size());
         *querystring += "=";
-        *querystring += value;
+        *querystring += std::string(value.data(), value.size());
 
         return MHD_YES;
     }
@@ -281,7 +298,7 @@ namespace httpserver
         }
     }
 
-    std::string_view http_request::get_user() const
+    string_view http_request::get_user() const
     {
         if (!cache->username.empty())
         {
@@ -291,7 +308,7 @@ namespace httpserver
         return cache->username;
     }
 
-    std::string_view http_request::get_pass() const
+    string_view http_request::get_pass() const
     {
         if (!cache->password.empty())
         {
@@ -301,7 +318,7 @@ namespace httpserver
         return cache->password;
     }
 
-    std::string_view http_request::get_digested_user() const
+    string_view http_request::get_digested_user() const
     {
         if (!cache->digested_user.empty())
         {
@@ -335,7 +352,7 @@ namespace httpserver
     }
 #endif // HAVE_GNUTLS
 
-    std::string_view http_request::get_requestor() const
+    string_view http_request::get_requestor() const
     {
         if (!cache->requestor_ip.empty())
         {
@@ -357,15 +374,18 @@ namespace httpserver
 
     std::ostream &operator<<(std::ostream &os, const http_request &r)
     {
-        os << r.get_method() << " Request [user:\"" << r.get_user() << "\" pass:\"" << r.get_pass() << "\"] path:\""
-           << r.get_path() << "\"" << std::endl;
+        os << std::string(r.get_method().data(), r.get_method().size()) << " Request [user:\""
+           << std::string(r.get_user().data(), r.get_user().size()) << "\" pass:\""
+           << std::string(r.get_pass().data(), r.get_pass().size()) << "\"] path:\""
+           << std::string(r.get_path().data(), r.get_path().size()) << "\"" << std::endl;
 
         http::dump_header_map(os, "Headers", r.get_headers());
         http::dump_header_map(os, "Footers", r.get_footers());
         http::dump_header_map(os, "Cookies", r.get_cookies());
         http::dump_arg_map(os, "Query Args", r.get_args());
 
-        os << "    Version [ " << r.get_version() << " ] Requestor [ " << r.get_requestor()
+        os << "    Version [ " << std::string(r.get_version().data(), r.get_version().size())
+           << " ] Requestor [ " << std::string(r.get_requestor().data(), r.get_requestor().size())
            << " ] Port [ " << r.get_requestor_port() << " ]" << std::endl;
 
         return os;

@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.10)
 project(libhttpserver VERSION 0.19.0 LANGUAGES CXX)
 
 # C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Options
 option(ENABLE_DEBUG "Enable debug mode" OFF)
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
-option(ENABLE_EXAMPLES "Build examples" ON)
+option(ENABLE_EXAMPLES "Build examples" OFF)
 option(ENABLE_FASTOPEN "Enable TCP_FASTOPEN support" ON)
 option(ENABLE_STATIC "Enable static linking" ON)
 option(WITH_TLS "Enable TLS support" ON)

@@ -64,6 +64,21 @@
 typedef int MHD_Result;
 #endif
 
+// Custom string_view for C++11, standard string_view for C++17 and above
+#if __cplusplus >= 201703L
+#include <string_view>
+namespace httpserver
+{
+    using string_view = std::string_view;
+}
+#else
+#include "include/utils/string_view.h" // Use custom string_view for C++11
+namespace httpserver
+{
+    using string_view = StringView;
+}
+#endif
+
 namespace httpserver
 {
 
@@ -305,7 +320,7 @@ namespace httpserver
              * @param first string
              * @param second string
              **/
-            bool operator()(std::string_view x, std::string_view y) const
+            bool operator()(string_view x, string_view y) const
             {
                 COMPARATOR(x, y, std::toupper);
             }
@@ -324,12 +339,8 @@ namespace httpserver
         {
         public:
             using is_transparent = std::true_type;
-            /**
-             * Operator used to compare strings.
-             * @param first string
-             * @param second string
-             **/
-            bool operator()(std::string_view x, std::string_view y) const
+
+            bool operator()(string_view x, string_view y) const
             {
 #ifdef CASE_INSENSITIVE
                 COMPARATOR(x, y, std::toupper);
@@ -337,24 +348,27 @@ namespace httpserver
                 COMPARATOR(x, y, ); // NOLINT(whitespace/comma)
 #endif
             }
+
             bool operator()(const std::string &x, const std::string &y) const
             {
-                return operator()(std::string_view(x), std::string_view(y));
+                return operator()(string_view(x.data(), x.size()), string_view(y.data(), y.size()));
             }
-            bool operator()(std::string_view x, const std::string &y) const
+
+            bool operator()(string_view x, const std::string &y) const
             {
-                return operator()(x, std::string_view(y));
+                return operator()(x, string_view(y.data(), y.size()));
             }
-            bool operator()(const std::string &x, std::string_view y) const
+
+            bool operator()(const std::string &x, string_view y) const
             {
-                return operator()(std::string_view(x), std::string(y));
+                return operator()(string_view(x.data(), x.size()), y);
             }
         };
 
         using header_map = std::map<std::string, std::string, http::header_comparator>;
-        using header_view_map = std::map<std::string_view, std::string_view, http::header_comparator>;
+        using header_view_map = std::map<string_view, string_view, http::header_comparator>;
         using arg_map = std::map<std::string, http_arg_value, http::arg_comparator>;
-        using arg_view_map = std::map<std::string_view, http_arg_value, http::arg_comparator>;
+        using arg_view_map = std::map<string_view, http_arg_value, http::arg_comparator>;
 
         struct ip_representation
         {

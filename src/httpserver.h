@@ -21,8 +21,19 @@
 #ifndef SRC_HTTPSERVER_HPP_
 #define SRC_HTTPSERVER_HPP_
 
-#if __cplusplus < 201703L
-#error("libhttpserver requires C++17 or later.")
+// Custom string_view for C++11, standard string_view for C++17 and above
+#if __cplusplus >= 201703L
+#include <string_view>
+namespace httpserver
+{
+     using string_view = std::string_view;
+}
+#else
+#include "include/utils/string_view.h" // Use custom string_view for C++11
+namespace httpserver
+{
+     using string_view = StringView;
+}
 #endif
 
 #define _HTTPSERVER_HPP_INSIDE_
