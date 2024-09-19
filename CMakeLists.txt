@@ -12,7 +12,7 @@ option(ENABLE_EXAMPLES "Build examples" OFF)
 option(ENABLE_FASTOPEN "Enable TCP_FASTOPEN support" ON)
 option(ENABLE_STATIC "Enable static linking" ON)
 option(WITH_TLS "Enable TLS support" ON)
-option(ENABLE_TESTS "Build tests" ON) # Add option to control whether to build tests
+option(ENABLE_TESTS "Build tests" OFF) # Add option to control whether to build tests
 
 # Compiler flags
 if(ENABLE_DEBUG)
@@ -57,7 +57,7 @@ target_link_libraries(libhttpserver PRIVATE ${LIBMICROHTTPD_LIBRARY} Threads::Th
 
 # Install the library and headers
 install(TARGETS libhttpserver DESTINATION lib)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/httpserver DESTINATION include)
+install(FILES ${CMAKE_SOURCE_DIR}/src/httpserver.h DESTINATION include)
 
 # Examples
 if(ENABLE_EXAMPLES)
