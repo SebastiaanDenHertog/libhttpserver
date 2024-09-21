@@ -39,12 +39,11 @@ if(NOT LIBMICROHTTPD_INCLUDE_DIR OR NOT LIBMICROHTTPD_LIBRARY)
 endif()
 
 # Include directories for src and headers
-include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${LIBMICROHTTPD_INCLUDE_DIR})
 
 # Collect source files
 file(GLOB_RECURSE LIBHTTPSERVER_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/*.cpp
 )
 
 # Create the libhttpserver library
@@ -61,7 +60,7 @@ install(FILES ${CMAKE_SOURCE_DIR}/src/httpserver.h DESTINATION include)
 
 # Examples
 if(ENABLE_EXAMPLES)
-    file(GLOB EXAMPLES_SOURCES ${CMAKE_SOURCE_DIR}/examples/*.cpp)
+    file(GLOB EXAMPLES_SOURCES ${PROJECT_SOURCE_DIR}/examples/*.cpp)
 
     foreach(EXAMPLE_FILE ${EXAMPLES_SOURCES})
         get_filename_component(EXAMPLE_NAME ${EXAMPLE_FILE} NAME_WE)
