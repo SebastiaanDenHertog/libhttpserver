@@ -440,6 +440,7 @@ namespace httpserver
          * Method used to set all arguments of the request.
          * @param args The args key-value map to set for the request.
          **/
+        #if __cplusplus >= 201703L
         void set_args(const std::map<std::string, std::string> &args)
         {
             for (auto const &[key, value] : args)
@@ -447,6 +448,17 @@ namespace httpserver
                 cache->unescaped_args[key].push_back(value.substr(0, content_size_limit));
             }
         }
+        #else
+        void set_args(const std::map<std::string, std::string> &args)
+        {
+            for (auto const &pair : args)
+            {
+                const std::string &key = pair.first;
+                const std::string &value = pair.second;
+                cache->unescaped_args[key].push_back(value.substr(0, content_size_limit));
+            }
+        }
+        #endif
 
         string_view get_connection_value(string_view key, enum MHD_ValueKind kind) const;
         const http::header_view_map get_headerlike_values(enum MHD_ValueKind kind) const;

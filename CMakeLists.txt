@@ -7,12 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Options
 option(ENABLE_DEBUG "Enable debug mode" OFF)
-option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+option(ENABLE_COVERAGE "Enable coverage reporting" ON)
 option(ENABLE_EXAMPLES "Build examples" OFF)
 option(ENABLE_FASTOPEN "Enable TCP_FASTOPEN support" ON)
 option(ENABLE_STATIC "Enable static linking" ON)
 option(WITH_TLS "Enable TLS support" ON)
-option(ENABLE_TESTS "Build tests" OFF) # Add option to control whether to build tests
+option(ENABLE_TESTS "Build tests" ON) # Add option to control whether to build tests
 
 # Compiler flags
 if(ENABLE_DEBUG)
