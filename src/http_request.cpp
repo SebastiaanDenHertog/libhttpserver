@@ -171,7 +171,7 @@ namespace httpserver
         }
     }
 
-    http_arg_value http_request::get_arg(httpserver::string_view key) const
+    http_arg_value http_request::get_arg(string_view key) const
     {
         populate_args();
 
