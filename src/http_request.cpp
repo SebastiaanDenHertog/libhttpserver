@@ -203,6 +203,8 @@ namespace httpserver
         return get_connection_value(key, MHD_GET_ARGUMENT_KIND);
     }
 
+    #if __cplusplus >= 201703L // C++17 and later
+
     const http::arg_view_map http_request::get_args() const
     {
         populate_args();
@@ -229,6 +231,41 @@ namespace httpserver
         }
         return ret;
     }
+
+    #else // C++11
+
+    const http::arg_view_map http_request::get_args() const
+    {
+        populate_args();
+
+        http::arg_view_map arguments;
+        for (const auto &pair : cache->unescaped_args)
+        {
+            const std::string &key = pair.first;
+            const std::vector<std::string> &value = pair.second;
+            auto &arg_values = arguments[key];
+            for (const auto &v : value)
+            {
+                arg_values.values.push_back(v);
+            }
+        }
+        return arguments;
+    }
+
+    const std::map<string_view, string_view, http::arg_comparator> http_request::get_args_flat() const
+    {
+        populate_args();
+        std::map<string_view, string_view, http::arg_comparator> ret;
+        for (const auto &pair : cache->unescaped_args)
+        {
+            const std::string &key = pair.first;
+            const std::vector<std::string> &val = pair.second;
+            ret[key] = val[0];
+        }
+        return ret;
+    }
+
+    #endif
 
     http::file_info &http_request::get_or_create_file_info(const std::string &key, const std::string &upload_file_name)
     {
